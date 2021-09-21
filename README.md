@@ -29,7 +29,8 @@ Submit a PR to add a binary under `src/bin/`.
 - speed - how to make it as fast as possible?
 - correctness/completeness
   + does it collect all the links it can?
-  + does it handle relative links, etc?
+  + does it handle relative links?
+  + what to do when links are broken?
 - input URL - does this have to be the base URL?
 - output - how to display the results? terminal? serve to HTML to view in
   browser?
