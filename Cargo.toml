@@ -1,0 +1,15 @@
+[package]
+name = "web-crawler"
+version = "0.1.0"
+authors = ["tarquin-the-brave <tomsteavenson@gmail.com>"]
+edition = "2018"
+publish = ["metaswitch"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.44"
+encoding_rs_io = "0.1.7"
+reqwest = "0.11.4"
+select = "0.5.0"
+structopt = "0.3.23"
