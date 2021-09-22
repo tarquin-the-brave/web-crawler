@@ -41,6 +41,7 @@ fn main() -> anyhow::Result<()> {
 
         bad.into_iter().map(Result::unwrap_err).for_each(|url| {
             visited.insert(url.clone());
+            println!("bad link: {}", url);
             broken_links.insert(url);
         });
 
@@ -49,6 +50,7 @@ fn main() -> anyhow::Result<()> {
             .for_each(|(url, links)| {
                 visited.insert(url.clone());
                 for link in &links {
+                    println!("got link {}", link);
                     let linkstr = link.as_str();
                     if linkstr.ends_with(".png")
                         || linkstr.ends_with(".jpeg")
