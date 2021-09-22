@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Result};
 use reqwest::{Client, Url};
 use std::collections::{HashMap, HashSet};
-use structopt::StructOpt;
 use web_crawler::{get_links_html, output_graph, Cli};
 fn main() -> anyhow::Result<()> {
-    let args = Cli::from_args();
+    let args = {
+        use structopt::StructOpt as _;
+        Cli::from_args()
+    };
 
     let host = args
         .url

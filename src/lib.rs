@@ -34,6 +34,20 @@ pub fn output_graph<W: std::io::Write>(
     Ok(())
 }
 
+///
+/// Basic CLI
+///
+/// Usage:
+///
+/// ```
+/// main() {
+///     let args = {
+///         use structopt::StructOpt as _;
+///         Cli::from_args()
+///     };
+///     println!("arg given: {}", args.url);
+/// }
+/// ```
 #[derive(Debug, structopt::StructOpt)]
 pub struct Cli {
     /// Url to start the crawl from.
