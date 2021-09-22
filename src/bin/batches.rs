@@ -41,7 +41,6 @@ fn main() -> anyhow::Result<()> {
 
         bad.into_iter().map(Result::unwrap_err).for_each(|url| {
             visited.insert(url.clone());
-            println!("bad link: {}", url);
             broken_links.insert(url);
         });
 
@@ -50,10 +49,11 @@ fn main() -> anyhow::Result<()> {
             .for_each(|(url, links)| {
                 visited.insert(url.clone());
                 for link in &links {
-                    println!("got link {}", link);
                     let linkstr = link.as_str();
                     if linkstr.ends_with(".png")
                         || linkstr.ends_with(".jpeg")
+                        || linkstr.ends_with(".jpg")
+                        || linkstr.ends_with(".htm")
                         || linkstr.ends_with(".pdf")
                     {
                         continue;
@@ -64,7 +64,7 @@ fn main() -> anyhow::Result<()> {
             });
     }
 
-    output_graph(&site_graph);
+    output_graph(&site_graph, std::io::stdout())?;
 
     Ok(())
 }
@@ -76,14 +76,20 @@ async fn fetch_links(
 ) -> Result<(Url, HashSet<Url>), Url> {
     fetch_links_inner(client, url, host)
         .await
-        .map_err(|_| url.clone())
-        .map(|links| (url.clone(), links))
+        .map_err(|_| {
+            println!("link {} was broken", url);
+            url.clone()
+        })
+        .map(|links| {
+            println!("found {} links from: {}", links.len(), url);
+            (url.clone(), links)
+        })
 }
 
 async fn fetch_links_inner(
     client: &Client,
     url: &reqwest::Url,
-    host: &str,
+    site_host: &str,
 ) -> Result<HashSet<Url>> {
     client
         .get(url.clone())
@@ -99,13 +105,19 @@ async fn fetch_links_inner(
             links
                 .into_iter()
                 .filter_map(|link| {
-                    link.host_str().and_then(|link_host| {
-                        if link_host == host {
-                            Some(link.clone())
-                        } else {
-                            None
-                        }
-                    })
+                    if let Some(link) = Url::parse(&link).ok() {
+                        link.host_str().and_then(|link_host| {
+                            if link_host == site_host {
+                                Some(url.clone())
+                            } else {
+                                None
+                            }
+                        })
+                    } else {
+                        // It might be a relative link, try to join it to the URL it is linked
+                        // from.
+                        url.join(&link).ok()
+                    }
                 })
                 .collect()
         })
