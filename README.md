@@ -52,5 +52,5 @@ Some suggestions:
 ```
 https://python-poetry.org
 https://serde.rs
-https://beyondmeat.com
+https://www.beyondmeat.com
 ```
