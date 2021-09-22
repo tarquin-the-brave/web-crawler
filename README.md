@@ -39,3 +39,18 @@ Submit a PR to add a binary under `src/bin/`.
 If you want to focus on _speed_ and the design of how to achieve it: some
 basic, by no means correct or complete, implementations of some of "the other
 bits" are included in `src/lib.rs`.  You can use these and or improve them.
+
+## Testing Performance
+
+The solution should ultimately work on any website, and it's worth testing
+against a range of websites.  It would be interesting to see how the
+performance is impacted between smaller and bigger sites. Starting with smaller
+websites that do a decent amount of linking internally is probably best.
+
+Some suggestions:
+
+```
+https://python-poetry.org
+https://serde.rs
+https://www.beyondmeat.com
+```
