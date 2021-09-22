@@ -47,7 +47,14 @@ against a range of websites.  It would be interesting to see how the
 performance is impacted between smaller and bigger sites. Starting with smaller
 websites that do a decent amount of linking internally is probably best.
 
-Some suggestions:
+To test:
+
+```
+cargo build --release
+time cargo run --release --bin <your solution binary> -- <url>
+```
+
+Some `<url>` suggestions:
 
 ```
 https://python-poetry.org
