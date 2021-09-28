@@ -1,6 +1,9 @@
 use anyhow::Result;
 use reqwest::Url;
 use std::collections::{HashMap, HashSet};
+
+pub type UrlGraph = HashMap<Url, HashSet<Url>>;
+
 pub fn get_links_html<R: std::io::Read>(html_doc: R) -> anyhow::Result<HashSet<String>> {
     Ok(
         select::document::Document::from_read(encoding_rs_io::DecodeReaderBytes::new(html_doc))?
@@ -23,10 +26,10 @@ pub fn output_graph<W: std::io::Write>(
     mut out: W,
 ) -> Result<()> {
     for (url, links) in graph {
-        if links.is_empty() {
-            continue;
-        }
         out.write_all(format!("\n{} links to:", url).as_bytes())?;
+        if links.is_empty() {
+            out.write_all("\n\tNothing".as_bytes())?;
+        }
         for link in links {
             out.write_all(format!("\n\t{}", link).as_bytes())?;
         }
