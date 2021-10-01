@@ -68,6 +68,8 @@ fn main() -> anyhow::Result<()> {
 
     output_graph(&site_graph, std::io::stdout())?;
 
+    println!("\nFound {} links", visited.len() - 1);
+
     Ok(())
 }
 
