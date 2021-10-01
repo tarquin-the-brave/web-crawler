@@ -16,16 +16,16 @@ www.example.com links to:
 www.example.com/foo links to:
   www.example.com/bar
 
-Found 3 links in total.
+Found 3 links to 2 unique URLs.
 ```
 
 anything linked outside of the `www.example.com` domain wouldn't be visited or
 included in this output.
 
 The will be a number of design decisions to make which might effect what's
-included in your graph of links.  Stating how many links you find will help
-comparison of completeness and performance of different solutions you might
-try.
+included in your graph of links between URLs.  Stating how many links you find
+will help comparison of completeness and performance of different solutions you
+might try.
 
 # Adding a Solution
 
