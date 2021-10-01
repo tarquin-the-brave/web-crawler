@@ -60,7 +60,10 @@ fn main() -> anyhow::Result<()> {
                     {
                         continue;
                     }
-                    to_visit.insert(link.clone());
+                    let mut link_scrubed = link.clone();
+                    link_scrubed.set_fragment(None);
+                    link_scrubed.set_query(None);
+                    to_visit.insert(link_scrubed);
                 }
                 site_graph.insert(url, links);
             });
@@ -68,7 +71,23 @@ fn main() -> anyhow::Result<()> {
 
     output_graph(&site_graph, std::io::stdout())?;
 
-    println!("\nFound {} links", visited.len() - 1);
+    let all_links: Vec<&Url> = site_graph
+        .iter()
+        .map(|(_, links)| links)
+        .flatten()
+        .collect();
+
+    let unique_links: HashSet<&Url> = site_graph
+        .iter()
+        .map(|(_, links)| links)
+        .flatten()
+        .collect();
+
+    println!(
+        "\nFound {} links to {} unique URLs.",
+        all_links.len(),
+        unique_links.len()
+    );
 
     Ok(())
 }
