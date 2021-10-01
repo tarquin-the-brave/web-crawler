@@ -39,6 +39,8 @@ Submit a PR to add a binary under `src/bin/`.
   + does it handle relative links?
   + what to do when links are broken?
   + do you include links to sub-domains?
+  + what to do about fragments & queries?
+  + etc...
 - input URL - does this have to be the base URL?
 - output - how to display the results? terminal? serve to HTML to view in
   browser?
