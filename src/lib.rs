@@ -25,6 +25,17 @@ pub fn output_graph<W: std::io::Write>(
     graph: &HashMap<Url, HashSet<Url>>,
     mut out: W,
 ) -> Result<()> {
+    let pages = graph.len();
+    let unique_urls = graph
+        .values()
+        .cloned()
+        .fold(HashSet::new(), |acc, x| acc.union(&x).cloned().collect())
+        .len();
+    let total_links: usize = graph.values().map(|v| v.len()).sum();
+    out.write_all(format!("\nFound {} unique pages:", pages).as_bytes())?;
+    out.write_all(format!("\nFound {} unique URLs:", unique_urls).as_bytes())?;
+    out.write_all(format!("\nFound {} total links:", total_links).as_bytes())?;
+
     for (url, links) in graph {
         out.write_all(format!("\n{} links to:", url).as_bytes())?;
         if links.is_empty() {
