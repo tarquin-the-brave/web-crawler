@@ -40,11 +40,17 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn fetcher(host: String, mut url_rx: Receiver<Url>, links_tx: Sender<LinksMsg>) {
+    let client = reqwest::Client::new();
     loop {
         match url_rx.recv().await {
             None => return,
             Some(url) => {
-                spawn(get_links(host.clone(), url, links_tx.clone()));
+                spawn(get_links(
+                    client.clone(),
+                    host.clone(),
+                    url,
+                    links_tx.clone(),
+                ));
             }
         };
     }
@@ -104,8 +110,13 @@ async fn graph_builder(
     Ok(())
 }
 
-async fn get_links(site_host: String, url: Url, links_tx: Sender<LinksMsg>) -> Result<()> {
-    let msg = if let Ok(links) = get_links_inner(&site_host, &url).await {
+async fn get_links(
+    client: reqwest::Client,
+    site_host: String,
+    url: Url,
+    links_tx: Sender<LinksMsg>,
+) -> Result<()> {
+    let msg = if let Ok(links) = get_links_inner(&client, &site_host, &url).await {
         println!("Got {} links from {}", links.len(), url);
         LinksMsg::Links(url, links)
     } else {
@@ -118,8 +129,14 @@ async fn get_links(site_host: String, url: Url, links_tx: Sender<LinksMsg>) -> R
     Ok(())
 }
 
-async fn get_links_inner(site_host: &str, url: &Url) -> Result<HashSet<Url>> {
-    reqwest::get(url.clone())
+async fn get_links_inner(
+    client: &reqwest::Client,
+    site_host: &str,
+    url: &Url,
+) -> Result<HashSet<Url>> {
+    client
+        .get(url.clone())
+        .send()
         .await?
         .error_for_status()?
         .bytes()
