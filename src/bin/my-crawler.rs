@@ -18,7 +18,7 @@ fn recursive_search(url: Url, url_graph: &mut UrlGraph) -> Result<()> {
     let html_doc = reqwest::blocking::get(url.clone())?.text()?;
     let links = get_links_html(html_doc.as_bytes())?;
 
-    // Parse the Strings into URLs and pray
+    // Parse the links into URLs
     let links: HashSet<Url> = links
         .into_iter()
         // Try to parse as URL
