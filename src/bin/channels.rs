@@ -54,40 +54,41 @@ async fn graph_builder(
     mut links_rx: Receiver<LinksMsg>,
     url_tx: Sender<Url>,
     done_tx: Sender<UrlGraph>,
-) {
+) -> Result<()> {
     let mut url_graph = UrlGraph::new();
     let mut in_flight = HashSet::<Url>::new();
     loop {
-        match links_rx.recv().await {
-            None => return,
-            Some(msg) => match msg {
-                LinksMsg::Failed(url) => {
-                    in_flight.remove(&url);
-                }
-                LinksMsg::Links(url, links) => {
-                    in_flight.remove(&url);
-                    for link in &links {
-                        let linkstr = link.as_str();
-                        if linkstr.ends_with(".png")
-                            || linkstr.ends_with(".jpeg")
-                            || linkstr.ends_with(".jpg")
-                            || linkstr.ends_with(".htm")
-                            || linkstr.ends_with(".pdf")
-                        {
-                            continue;
-                        }
-                        let mut link_scrubed = link.clone();
-                        link_scrubed.set_fragment(None);
-                        link_scrubed.set_query(None);
-
-                        if link_scrubed != url && !url_graph.contains_key(&link_scrubed) {
-                            url_tx.send(link_scrubed.clone()).unwrap();
-                            in_flight.insert(link_scrubed);
-                        }
+        match links_rx
+            .recv()
+            .await
+            .ok_or_else(|| anyhow!("links senders all dropped"))?
+        {
+            LinksMsg::Failed(url) => {
+                in_flight.remove(&url);
+            }
+            LinksMsg::Links(url, links) => {
+                in_flight.remove(&url);
+                for link in &links {
+                    let linkstr = link.as_str();
+                    if linkstr.ends_with(".png")
+                        || linkstr.ends_with(".jpeg")
+                        || linkstr.ends_with(".jpg")
+                        || linkstr.ends_with(".htm")
+                        || linkstr.ends_with(".pdf")
+                    {
+                        continue;
                     }
-                    url_graph.insert(url, links);
+                    let mut link_scrubed = link.clone();
+                    link_scrubed.set_fragment(None);
+                    link_scrubed.set_query(None);
+
+                    if link_scrubed != url && !url_graph.contains_key(&link_scrubed) {
+                        url_tx.send(link_scrubed.clone())?;
+                        in_flight.insert(link_scrubed);
+                    }
                 }
-            },
+                url_graph.insert(url, links);
+            }
         }
 
         if in_flight.is_empty() {
@@ -95,17 +96,21 @@ async fn graph_builder(
         }
     }
 
-    done_tx.send(url_graph).unwrap();
+    done_tx.send(url_graph)?;
+
+    Ok(())
 }
 
-async fn get_links(site_host: String, url: Url, links_tx: Sender<LinksMsg>) {
+async fn get_links(site_host: String, url: Url, links_tx: Sender<LinksMsg>) -> Result<()> {
     let msg = if let Ok(links) = get_links_inner(&site_host, &url).await {
         LinksMsg::Links(url, links)
     } else {
         LinksMsg::Failed(url)
     };
 
-    links_tx.send(msg).unwrap()
+    links_tx.send(msg)?;
+
+    Ok(())
 }
 
 async fn get_links_inner(site_host: &str, url: &Url) -> Result<HashSet<Url>> {
