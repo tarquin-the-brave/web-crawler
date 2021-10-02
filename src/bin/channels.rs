@@ -82,7 +82,10 @@ async fn graph_builder(
                     link_scrubbed.set_fragment(None);
                     link_scrubbed.set_query(None);
 
-                    if link_scrubbed != url && !url_graph.contains_key(&link_scrubbed) {
+                    if link_scrubbed != url
+                        && !url_graph.contains_key(&link_scrubbed)
+                        && !in_flight.contains(&link_scrubbed)
+                    {
                         url_tx.send(link_scrubbed.clone())?;
                         in_flight.insert(link_scrubbed);
                     }
