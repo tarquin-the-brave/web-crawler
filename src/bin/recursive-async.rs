@@ -9,6 +9,11 @@ use structopt::StructOpt;
 use tokio;
 use web_crawler::*;
 
+lazy_static::lazy_static! {
+    /// This is an example for using doc comment attributes
+    static ref BAD_URL: Url = Url::parse("http://BadUrl").expect("Bad Url");
+}
+
 type SendableUrlGraph = Arc<Mutex<UrlGraph>>;
 
 #[tokio::main]
@@ -16,7 +21,7 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::from_args();
     let url_graph = Arc::new(Mutex::new(UrlGraph::new()));
     recursive_search(cli.url, url_graph.clone()).await?;
-    output_graph(&url_graph.lock().expect("Posioned Lock"), std::io::stdout())?;
+    output_graph(&url_graph.lock().expect("Poisoned Lock"), std::io::stdout())?;
     Ok(())
 }
 
@@ -24,7 +29,7 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
     async move {
         // Before starting check that the link isn't already in the HashSet
         {
-            let mut data = url_graph.lock().expect("Posioned lock");
+            let mut data = url_graph.lock().expect("Poisoned lock");
             if data.contains_key(&url) {
                 return Ok(());
             } else {
@@ -36,7 +41,12 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
         let html_doc = if let Ok(doc) = get_page(&url).await {
             doc
         } else {
-            println!("Failed to read: {}", url);
+            url_graph
+                .lock()
+                .expect("Poisoned lock")
+                .get_mut(&url)
+                .expect("Url disappered")
+                .insert(BAD_URL.clone());
             return Ok(());
         };
         let links = get_links_html(html_doc.as_bytes())?;
@@ -102,5 +112,9 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
 }
 
 async fn get_page(url: &Url) -> Result<String> {
-    Ok(reqwest::get(url.clone()).await?.text().await?)
+    Ok(reqwest::get(url.clone())
+        .await?
+        .error_for_status()?
+        .text()
+        .await?)
 }
