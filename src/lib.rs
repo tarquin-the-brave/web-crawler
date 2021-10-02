@@ -43,9 +43,9 @@ pub fn output_graph<W: std::io::Write>(
         }
     }
 
-    out.write_all(format!("\nFound {} unique pages:", pages).as_bytes())?;
-    out.write_all(format!("\nFound {} unique URLs:", unique_urls).as_bytes())?;
-    out.write_all(format!("\nFound {} total links:", total_links).as_bytes())?;
+    out.write_all(format!("\nFound {} unique pages", pages).as_bytes())?;
+    out.write_all(format!("\nFound {} unique URLs", unique_urls).as_bytes())?;
+    out.write_all(format!("\nFound {} total links", total_links).as_bytes())?;
 
     Ok(())
 }
