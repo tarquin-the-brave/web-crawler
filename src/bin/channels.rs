@@ -103,8 +103,10 @@ async fn graph_builder(
 
 async fn get_links(site_host: String, url: Url, links_tx: Sender<LinksMsg>) -> Result<()> {
     let msg = if let Ok(links) = get_links_inner(&site_host, &url).await {
+        println!("Got {} links from {}", links.len(), url);
         LinksMsg::Links(url, links)
     } else {
+        println!("Broken link {}", url);
         LinksMsg::Failed(url)
     };
 
