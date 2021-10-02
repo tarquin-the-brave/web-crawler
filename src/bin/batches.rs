@@ -71,24 +71,6 @@ fn main() -> anyhow::Result<()> {
 
     output_graph(&site_graph, std::io::stdout())?;
 
-    let all_links: Vec<&Url> = site_graph
-        .iter()
-        .map(|(_, links)| links)
-        .flatten()
-        .collect();
-
-    let unique_links: HashSet<&Url> = site_graph
-        .iter()
-        .map(|(_, links)| links)
-        .flatten()
-        .collect();
-
-    println!(
-        "\nFound {} links to {} unique URLs.",
-        all_links.len(),
-        unique_links.len()
-    );
-
     Ok(())
 }
 
