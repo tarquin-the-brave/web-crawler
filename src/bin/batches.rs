@@ -113,7 +113,7 @@ async fn fetch_links_inner(
                     if let Some(link) = Url::parse(&link).ok() {
                         link.host_str().and_then(|link_host| {
                             if link_host == site_host {
-                                Some(url.clone())
+                                Some(link.clone())
                             } else {
                                 None
                             }
