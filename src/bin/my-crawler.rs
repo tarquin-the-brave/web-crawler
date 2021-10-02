@@ -32,12 +32,11 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
             }
         }
 
-        println!("Checking URL: {}", url);
-        // Get the URLs
+        // Get the URL
         let html_doc = reqwest::get(url.clone()).await?.text().await?;
         let links = get_links_html(html_doc.as_bytes())?;
 
-        // Parse the Strings into URLs and pray
+        // Parse the links into URLs
         let links: HashSet<Url> = links
             .into_iter()
             // Try to parse as URL
@@ -68,10 +67,13 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
             .collect();
 
         // Filter out any links we've already seen
-        let links: HashSet<Url> = links
-            .into_iter()
-            .filter(|x| !url_graph.lock().expect("Poisoned lock").contains_key(x))
-            .collect();
+        let links: HashSet<Url> = {
+            let data = url_graph.lock().expect("Posioned lock");
+            links
+                .into_iter()
+                .filter(|x| !data.contains_key(x))
+                .collect()
+        };
 
         // Add new links to the graph
         let mut child_searches = Vec::new();
