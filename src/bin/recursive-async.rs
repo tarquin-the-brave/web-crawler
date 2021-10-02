@@ -33,7 +33,12 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
         }
 
         // Get the URL
-        let html_doc = reqwest::get(url.clone()).await?.text().await?;
+        let html_doc = if let Ok(doc) = get_page(&url).await {
+            doc
+        } else {
+            println!("Failed to read: {}", url);
+            return Ok(());
+        };
         let links = get_links_html(html_doc.as_bytes())?;
 
         // Parse the links into URLs
@@ -43,9 +48,10 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
             // If that fails assume that it's a relative URL
             // and join to the parent
             .map(|x| match Url::from_str(&x) {
-                Ok(x) => x,
-                Err(_) => url.join(&x).unwrap(),
+                Ok(x) => Ok(x),
+                Err(_) => url.join(&x),
             })
+            .filter_map(|x| x.ok())
             .filter(|x| x.domain() == url.domain())
             .collect();
 
@@ -69,7 +75,8 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
                 let link_str = link.as_str();
                 !(link_str.ends_with(".jpeg")
                     || link_str.ends_with(".pdf")
-                    || link_str.ends_with(".jpg"))
+                    || link_str.ends_with(".jpg")
+                    || link_str.ends_with(".htm"))
             })
             .collect();
 
@@ -92,4 +99,8 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
         Ok(())
     }
     .boxed()
+}
+
+async fn get_page(url: &Url) -> Result<String> {
+    Ok(reqwest::get(url.clone()).await?.text().await?)
 }
