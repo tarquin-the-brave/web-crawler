@@ -57,12 +57,19 @@ fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static,
 
         // Queries and fragments don't resolve to different pages
         // Remove queries and fragments
+        // Filter out odd file formats
         let links: HashSet<Url> = links
             .into_iter()
             .map(|mut x| {
                 x.set_query(None);
                 x.set_fragment(None);
                 x
+            })
+            .filter(|link| {
+                let link_str = link.as_str();
+                !(link_str.ends_with(".jpeg")
+                    || link_str.ends_with(".pdf")
+                    || link_str.ends_with(".jpg"))
             })
             .collect();
 
