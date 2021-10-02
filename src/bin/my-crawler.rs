@@ -22,6 +22,17 @@ async fn main() -> anyhow::Result<()> {
 
 fn recursive_search(url: Url, url_graph: SendableUrlGraph) -> BoxFuture<'static, Result<()>> {
     async move {
+        // Before starting check that the link isn't already in the HashSet
+        {
+            let mut data = url_graph.lock().expect("Posioned lock");
+            if data.contains_key(&url) {
+                return Ok(());
+            } else {
+                data.insert(url.clone(), HashSet::new());
+            }
+        }
+
+        println!("Checking URL: {}", url);
         // Get the URLs
         let html_doc = reqwest::get(url.clone()).await?.text().await?;
         let links = get_links_html(html_doc.as_bytes())?;
