@@ -10,44 +10,25 @@ import (
 )
 
 func main() {
-	c := make(chan struct {
-		From  url.URL
-		To    []url.URL
-		Error error
-	})
-
 	arg := os.Args[1]
 	base, err := url.Parse(arg)
 	if err != nil {
 		fmt.Println(arg, "is not a URL.")
 	}
-	graph := map[url.URL][]url.URL{}
-	toGet := map[url.URL]struct{}{*base: {}}
 
-	for {
-		if len(toGet) == 0 {
-			break
-		}
-		freq := 0
-		for u := range toGet {
-			go getLinks(u, base, c)
-			freq += 1
-		}
+	cLinks := make(chan struct {
+		From  url.URL
+		To    []url.URL
+		Error error
+	})
+	cUrl := make(chan url.URL)
+	cGraph := make(chan map[url.URL][]url.URL)
 
-		for i := 0; i < freq; i++ {
-			links := <-c
-			if links.Error == nil {
-				graph[links.From] = links.To
-				for _, link := range links.To {
-					_, alreadySeen := graph[link]
-					if !alreadySeen {
-						toGet[link] = struct{}{}
-					}
-				}
-			}
-			delete(toGet, links.From)
-		}
-	}
+	go fetcher(base, cUrl, cLinks)
+	go graphBuilder(cLinks, cUrl, cGraph)
+	cUrl <- *base
+
+	graph := <-cGraph
 
 	totLinks := 0
 	for linkFrom, links := range graph {
@@ -60,6 +41,61 @@ func main() {
 
 	fmt.Println("Found", len(graph), "unique pages")
 	fmt.Println("Found", totLinks, "total links")
+}
+
+func fetcher(base *url.URL, cUrl chan url.URL, cLinks chan struct {
+	From  url.URL
+	To    []url.URL
+	Error error
+}) {
+	for {
+		u := <-cUrl
+		go getLinks(u, base, cLinks)
+	}
+}
+
+func graphBuilder(cLinks chan struct {
+	From  url.URL
+	To    []url.URL
+	Error error
+}, cUrl chan url.URL, cGraph chan map[url.URL][]url.URL) {
+	graph := map[url.URL][]url.URL{}
+	inFlight := map[url.URL]struct{}{}
+
+	for {
+		links := <-cLinks
+		delete(inFlight, links.From)
+		if links.Error == nil {
+			graph[links.From] = links.To
+			for _, link := range links.To {
+				linkStr := link.String()
+				if strings.HasSuffix(linkStr, ".png") ||
+					strings.HasSuffix(linkStr, ".jpeg") ||
+					strings.HasSuffix(linkStr, ".jpg") ||
+					strings.HasSuffix(linkStr, ".htm") ||
+					strings.HasSuffix(linkStr, ".pdf") {
+					continue
+				}
+				link.RawQuery = ""
+				link.Fragment = ""
+				if _, found := graph[link]; found {
+					continue
+				}
+
+				if _, found := inFlight[link]; found {
+					continue
+				}
+				cUrl <- link
+				inFlight[link] = struct{}{}
+			}
+		}
+
+		if len(inFlight) == 0 {
+			break
+		}
+	}
+
+	cGraph <- graph
 }
 
 func getLinks(u url.URL, base *url.URL, c chan struct {
@@ -121,14 +157,9 @@ func getLinksInner(ug url.URL, base *url.URL) ([]url.URL, error) {
 			if !link.IsAbs() {
 				link = base.ResolveReference(link)
 			}
-			// Make sure the url is in the base domain
 
-			if link.Hostname() == base.Hostname() &&
-				!strings.HasSuffix(link.String(), ".png") &&
-				!strings.HasSuffix(link.String(), ".jpeg") &&
-				!strings.HasSuffix(link.String(), ".jpg") &&
-				!strings.HasSuffix(link.String(), ".htm") &&
-				!strings.HasSuffix(link.String(), ".pdf") {
+			// Make sure the url is in the base domain
+			if link.Hostname() == base.Hostname() {
 				links = append(links, *link)
 			}
 		}
