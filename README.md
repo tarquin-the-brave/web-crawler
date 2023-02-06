@@ -71,3 +71,12 @@ https://python-poetry.org
 https://serde.rs
 https://www.beyondmeat.com
 ```
+
+# Part 2
+
+Write a program to find the shortest path between two Wikipedia pages when
+following links between pages to get from one to the other. Print that path to
+stdout.
+
+To make the output more readable, you may want to extract the Wikipedia page
+titles and display the path as how they link to each other.
