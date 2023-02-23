@@ -1,5 +1,9 @@
 # web-crawler
 
+**UPDATE:** This exercise has been extended with a [Part
+2](#part-2---policing-the-wikipedia-game) that follows on from the main
+exercise.  For a greater challenge, go straight to part 2.
+
 > Write a web crawler that can be given a URL and show all the URLs that URL
   links to within the domain.  It will then find all the URLs that those URLs
   link to, and carry on until it has built the graph of the website with the
@@ -93,4 +97,5 @@ any bogus claims and keep the game running.
 
 Adapt your program (or write a program, if you've skipped straight to part 2)
 to be able to verify these claims (i.e. say if it's possible to go from one
-Wikipedia URL to another in the number of steps claimed).
+Wikipedia URL to another in the number of steps claimed)... And make it as fast
+as possible.
