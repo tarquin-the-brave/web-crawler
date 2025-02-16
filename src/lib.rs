@@ -50,22 +50,16 @@ pub fn output_graph<W: std::io::Write>(
     Ok(())
 }
 
-///
-/// Basic CLI
-///
-/// Usage:
-///
-/// ```
-/// main() {
-///     let args = {
-///         use structopt::StructOpt as _;
-///         Cli::from_args()
-///     };
-///     println!("arg given: {}", args.url);
-/// }
-/// ```
 #[derive(Debug, structopt::StructOpt)]
 pub struct Cli {
-    /// Url to start the crawl from.
-    pub url: Url,
+    /// The last part of the path of the URL for the page that you're starting on.
+    ///
+    /// e.g. for https://en.wikipedia.org/wiki/Taylor_Swift provide `Taylor_Swift` to this
+    /// argument.
+    pub start: String,
+    /// The last part of the path of the URL for the page that you're trying to reach.
+    ///
+    /// e.g. for https://en.wikipedia.org/wiki/Taylor_Swift provide `Taylor_Swift` to this
+    /// argument.
+    pub end: String,
 }
