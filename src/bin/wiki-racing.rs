@@ -13,10 +13,7 @@ const WIKIPEDIA: &str = "en.wikipedia.org";
 
 struct LinksMsg(Vec<Url>, HashSet<Url>);
 
-enum DoneMsg {
-    Done(Vec<String>),
-    Failed(usize),
-}
+struct DoneMsg(Vec<String>, usize);
 
 type UrlMsg = Vec<Url>;
 
@@ -45,17 +42,12 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn output_route(done_msg: DoneMsg) {
-    match done_msg {
-        DoneMsg::Done(trail) => {
-            let steps = trail.len() - 1;
-            println!("\nCan be done in {steps} steps\n");
-            let example = itertools::join(trail, " -> ");
-            println!("{example}");
-        }
-        DoneMsg::Failed(steps) => {
-            println!("Cannot be done in {steps} steps");
-        }
-    }
+    let DoneMsg(trail, visits) = done_msg;
+    let steps = trail.len() - 1;
+    println!("\nCan be done in {steps} steps\n");
+    let example = itertools::join(trail, " -> ");
+    println!("{example}");
+    println!("\n{visits} pages were visited\n");
 }
 
 async fn fetcher(mut url_rx: Receiver<UrlMsg>, links_tx: Sender<LinksMsg>) {
@@ -78,6 +70,7 @@ async fn trail_builder(
     start: Url,
     end: Url,
 ) -> Result<()> {
+    let mut visits = 0;
     let mut requested_links = HashSet::new();
     requested_links.insert(start);
     loop {
@@ -86,10 +79,7 @@ async fn trail_builder(
             .await
             .ok_or_else(|| anyhow!("links senders all dropped"))?;
 
-        if url_trail.len() > 6 {
-            done_tx.send(DoneMsg::Failed(5))?;
-            return Ok(());
-        }
+        visits += 1;
 
         for link in &links {
             let link_path = link.path();
@@ -100,7 +90,7 @@ async fn trail_builder(
                     .iter()
                     .map(|url| url.path_segments().unwrap().last().unwrap().to_string())
                     .collect();
-                done_tx.send(DoneMsg::Done(route))?;
+                done_tx.send(DoneMsg(route, visits))?;
                 return Ok(());
             }
 
