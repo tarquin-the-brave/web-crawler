@@ -2,14 +2,16 @@
 name = "web-crawler"
 version = "0.1.0"
 authors = ["tarquin-the-brave <tomsteavenson@gmail.com>"]
-edition = "2018"
-publish = ["metaswitch"]
+edition = "2021"
+publish = [""]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.44"
 encoding_rs_io = "0.1.7"
-reqwest = "0.11.4"
+itertools = "0.14.0"
+reqwest = "0.12.12"
 select = "0.5.0"
 structopt = "0.3.23"
+tokio = { version = "1.12.0", features = ["full"] }
