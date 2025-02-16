@@ -76,26 +76,12 @@ https://serde.rs
 https://www.beyondmeat.com
 ```
 
-# Part 2 - Policing the Wikipedia Game
+# Part 2 - Wikiracing
 
-Say you're engaging a spot of
-[Wikiracing](https://en.wikipedia.org/wiki/Wikiracing) with some friends.
+Adapt your program (or write a new one if it's starting here) so instead of 
+building a graph of internal links in a website you instead make it perform
+[Wikiracing](https://en.wikipedia.org/wiki/Wikiracing)!
 
-You agree the Wikipedia articles you want to start and finish at, and compete
-to find the shortest path.
-
-One of your friends exclaims:
-
-> "I've found a way to do it in 6 steps!"
-
-In order to keep to high octane action of the game going, you appoint a referee
-for each round that will verify claims like these before the game stops for
-people to compare their solutions.
-
-The referee needs to be able to verify these claims fast in order to discount
-any bogus claims and keep the game running.
-
-Adapt your program (or write a program, if you've skipped straight to part 2)
-to be able to verify these claims (i.e. say if it's possible to go from one
-Wikipedia URL to another in the number of steps claimed)... And make it as fast
-as possible.
+In Wikiracing you agree the Wikipedia articles you want to start and finish at,
+and compete to see who can get from the start to the finish first, following 
+only internal links.
